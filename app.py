@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from gevent import monkey
 monkey.patch_all()
 
@@ -17,7 +19,7 @@ from flask.ext.socketio import SocketIO
 
 TIMEZONE = pytz.timezone('America/Edmonton')
 
-app = Falsk(__name__)
+app = Flask(__name__)
 app.config['SECRET_KEY'] = 'n7xw34tydr897123gj9s34r76t'
 
 socketio =SocketIO(app)
