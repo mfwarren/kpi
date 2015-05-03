@@ -1,0 +1,80 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Website Status</title>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+    <link href='http://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function(){
+            namespace = ''; // change to an empty string to use the global namespace
+            // the socket.io documentation recommends sending an explicit package upon connection
+            // this is specially important when using the global namespace
+            var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+            socket.on('connect', function() {
+                socket.emit('my event', {data: 'I\'m connected!'});
+            });
+            // event handler for server sent data
+            // the data is displayed in the "Received" section of the page
+            socket.on('response', function(msg) {
+              for(var k in msg.events){
+                var obj = $("#"+k);
+                if(obj.length == 0){
+                  $("#statuses").append("<div class='github' id=\"" + k + "\">" + k + "<br><span>" + msg.events[k].type + "</span></div>");
+                  obj = $("#"+k);
+                }
+                if(obj){
+                  var newDateObj = new Date(new Date().getTime() - 12*60*60000);
+                  if(new Date(msg.events[k].created_at) >= newDateObj){
+                    obj.addClass('green');
+                    obj.removeClass('red');
+                  } else {
+                    obj.removeClass('green');
+                    obj.addClass('red');
+                  }
+                }
+              }
+            });
+        });
+    </script>
+    <style>
+    .github {
+      background-color: grey;
+      padding: 30px;
+      width: 500px;
+      border-radius: 10px;
+      color: white;
+      font-size: 22px;
+      margin: 10px;
+      font-family: 'Raleway', sans-serif;
+      }
+    .github.green {
+      background: #20bc0f; /* Old browsers */
+      background: -moz-linear-gradient(top, #20bc0f 0%, #0da80d 100%); /* FF3.6+ */
+      background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#20bc0f), color-stop(100%,#0da80d)); /* Chrome,Safari4+ */
+      background: -webkit-linear-gradient(top, #20bc0f 0%,#0da80d 100%); /* Chrome10+,Safari5.1+ */
+      background: -o-linear-gradient(top, #20bc0f 0%,#0da80d 100%); /* Opera 11.10+ */
+      background: -ms-linear-gradient(top, #20bc0f 0%,#0da80d 100%); /* IE10+ */
+      background: linear-gradient(to bottom, #20bc0f 0%,#0da80d 100%); /* W3C */
+      filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#20bc0f', endColorstr='#0da80d',GradientType=0 ); /* IE6-9 */
+    }
+    .github.red {
+      background: #cc0000; /* Old browsers */
+      background: -moz-linear-gradient(top, #cc0000 0%, #b23500 100%); /* FF3.6+ */
+      background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#cc0000), color-stop(100%,#b23500)); /* Chrome,Safari4+ */
+      background: -webkit-linear-gradient(top, #cc0000 0%,#b23500 100%); /* Chrome10+,Safari5.1+ */
+      background: -o-linear-gradient(top, #cc0000 0%,#b23500 100%); /* Opera 11.10+ */
+      background: -ms-linear-gradient(top, #cc0000 0%,#b23500 100%); /* IE10+ */
+      background: linear-gradient(to bottom, #cc0000 0%,#b23500 100%); /* W3C */
+      filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cc0000', endColorstr='#b23500',GradientType=0 ); /* IE6-9 */
+    }
+    html {
+      background-color: rgb(63, 62, 62);
+    }
+    </style>
+</head>
+<body>
+
+    <div id="statuses"></div>
+</body>
+</html>
