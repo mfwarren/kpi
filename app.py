@@ -25,6 +25,7 @@ app.config['SECRET_KEY'] = 'n7xw34tydr897123gj9s34r76t'
 socketio =SocketIO(app)
 
 thread = None
+hub = Github(os.environ['GITHUB_USERNAME'], os.environ['GITHUB_PASSWORD'])
 
 def check_commit(commit_url, timeseries):
     """
@@ -32,27 +33,29 @@ def check_commit(commit_url, timeseries):
     """
     r = requests.get(commit_url)
     data = r.json()
+    print(commit_url)
+    print(data)
     date = dateutil.parser.parse(data['commit']['committer']['date']).date()
     stats = data['stats']
-    timeseries[date].append(stats)
+    timeseries[date.isoformat()].append(stats)
 
 
 def process_push_event(event, timeseries):
     for commit in event.payload['commits']:
-        check_commit(commit['url'], timeseries)
+        # check_commit(commit['url'], timeseries)
+        local_date = event.created_at.replace(tzinfo=pytz.utc).astimezone(TIMEZONE).date()
+        timeseries[local_date.isoformat()] += 1
 
 
 def process_issues_event(event, timeseries):
     # need to convert created_at from UTC to MST
     local_date = event.created_at.replace(tzinfo=pytz.utc).astimezone(TIMEZONE).date()
-    timeseries[local_date] += 1
+    timeseries[local_date.isoformat()] += 1
 
 
 def recent_issues():
-    hub = Github(os.environ['GITHUB_USERNAME'], os.environ['GITHUB_PASSWORD'])
-
     date_array = [datetime.date.today() + datetime.timedelta(days=-i) for i in range(7)]
-    timeseries = {d: 0 for d in date_array}
+    timeseries = {d.isoformat(): 0 for d in date_array}
 
     user = hub.get_user('mfwarren')
     events = user.get_events()
@@ -62,13 +65,12 @@ def recent_issues():
                 process_issues_event(event, timeseries)
         except:
             break
-    return date_array, timeseries
+    return sum(timeseries.values())
 
 
 def recent_commits():
-    hub = Github(os.environ['GITHUB_USERNAME'], os.environ['GITHUB_PASSWORD'])
     date_array = [datetime.date.today() + datetime.timedelta(days=-i) for i in range(7)]
-    timeseries = {d: [] for d in date_array}
+    timeseries = {d.isoformat(): 0 for d in date_array}
 
     user = hub.get_user('mfwarren')
     events = user.get_events()
@@ -79,11 +81,15 @@ def recent_commits():
         except:
             break
 
+    return timeseries[datetime.date.today().isoformat()], sum(timeseries.values())
+
 def background_thread():
     while True:
-        date_array, issues = recent_issues()
-        commits_date_array, commits = recent_issues()
-        socketio.emit('recent issues', {'issues': issues, 'commits': commits}, namespace='')
+        issues = recent_issues()
+        commits_today, commits_this_week = recent_commits()
+        socketio.emit('response', {'issues': issues,
+                      'commits': commits_this_week,
+                      'commits_today': commits_today}, namespace='')
         time.sleep(60*30)  # 30 minutes
 
 

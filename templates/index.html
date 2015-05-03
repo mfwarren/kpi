@@ -17,23 +17,36 @@
             // event handler for server sent data
             // the data is displayed in the "Received" section of the page
             socket.on('response', function(msg) {
-              for(var k in msg.events){
-                var obj = $("#"+k);
-                if(obj.length == 0){
-                  $("#statuses").append("<div class='github' id=\"" + k + "\">" + k + "<br><span>" + msg.events[k].type + "</span></div>");
-                  obj = $("#"+k);
-                }
-                if(obj){
-                  var newDateObj = new Date(new Date().getTime() - 12*60*60000);
-                  if(new Date(msg.events[k].created_at) >= newDateObj){
-                    obj.addClass('green');
-                    obj.removeClass('red');
-                  } else {
-                    obj.removeClass('green');
-                    obj.addClass('red');
-                  }
-                }
+              console.log(msg);
+              var obj = $("#issues");
+              if (msg.issues > 1){
+                obj.addClass('green');
+                obj.removeClass('red');
+              } else {
+                obj.removeClass('green');
+                obj.addClass('red');
               }
+              obj.find('span').text("# of issues: " + msg.issues);
+
+              var obj = $("#commits");
+              if (msg.issues > 1){
+                obj.addClass('green');
+                obj.removeClass('red');
+              } else {
+                obj.removeClass('green');
+                obj.addClass('red');
+              }
+              obj.find('span').text("# of commits this week: " + msg.commits);
+
+              var obj = $("#commits-today");
+              if (msg.issues > 1){
+                obj.addClass('green');
+                obj.removeClass('red');
+              } else {
+                obj.removeClass('green');
+                obj.addClass('red');
+              }
+              obj.find('span').text("# of commits today: " + msg.commits_today);
             });
         });
     </script>
@@ -75,6 +88,10 @@
 </head>
 <body>
 
-    <div id="statuses"></div>
+    <div id="statuses">
+      <div class='github' id="issues"><span></span></div>
+      <div class='github' id="commits"><span></span></div>
+      <div class='github' id="commits-today"><span></span></div>
+    </div>
 </body>
 </html>
