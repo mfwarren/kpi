@@ -29,7 +29,7 @@
               obj.find('span').text("# of issues: " + msg.issues);
 
               var obj = $("#commits");
-              if (msg.issues > 1){
+              if (msg.commits > 7){
                 obj.addClass('green');
                 obj.removeClass('red');
               } else {
@@ -39,7 +39,7 @@
               obj.find('span').text("# of commits this week: " + msg.commits);
 
               var obj = $("#commits-today");
-              if (msg.issues > 1){
+              if (msg.commits_today > 1){
                 obj.addClass('green');
                 obj.removeClass('red');
               } else {
