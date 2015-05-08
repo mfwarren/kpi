@@ -89,7 +89,8 @@ def background_thread():
         commits_today, commits_this_week = recent_commits()
         socketio.emit('response', {'issues': issues,
                       'commits': commits_this_week,
-                      'commits_today': commits_today}, namespace='')
+                      'commits_today': commits_today,
+                      'critical_number': '1/5'}, namespace='')
         time.sleep(60*30)  # 30 minutes
 
 

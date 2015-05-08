@@ -47,10 +47,32 @@
                 obj.addClass('red');
               }
               obj.find('span').text("# of commits today: " + msg.commits_today);
+
+              var obj = $("#critical-number");
+              if (msg.critical_number){
+                obj.addClass('green');
+                obj.removeClass('red');
+              } else {
+                obj.removeClass('green');
+                obj.addClass('red')
+              }
+              obj.find('span').text('Critical Number: ' + msg.critical_number);
             });
         });
     </script>
     <style>
+    .critical {
+      padding: 30px;
+      width: 500px;
+      border-radius: 10px;
+      color: black;
+      font-size: 35px;
+      font-weight: 900;
+      margin: 10px;
+      font-family: 'Raleway', sans-serif;
+      background-color: rgb(231, 245, 12);
+
+    }
     .github {
       background-color: grey;
       padding: 30px;
@@ -89,6 +111,7 @@
 <body>
 
     <div id="statuses">
+      <div class='critical' id="critical-number"><span></span></div>
       <div class='github' id="issues"><span></span></div>
       <div class='github' id="commits"><span></span></div>
       <div class='github' id="commits-today"><span></span></div>
