@@ -10,6 +10,7 @@ import pytz
 from threading import Thread
 import dateutil.parser
 
+from refreshbooks import api as freshbooks_api
 from github import Github
 import requests
 
@@ -26,6 +27,13 @@ socketio =SocketIO(app)
 
 thread = None
 hub = Github(os.environ['GITHUB_USERNAME'], os.environ['GITHUB_PASSWORD'])
+
+freshbooks = freshbooks_api.TokenClient(
+    os.environ['FRESHBOOKS_DOMAIN'],
+    os.environ['FRESHBOOKS_API_TOKEN'],
+    user_agent='KPIDashboard/1.0'
+)
+
 
 def check_commit(commit_url, timeseries):
     """
@@ -85,12 +93,23 @@ def recent_commits():
 
 def background_thread():
     while True:
-        issues = recent_issues()
-        commits_today, commits_this_week = recent_commits()
+        issues = 0
+        commits_today = 0
+        commits_this_week = 0
+        client_count = 0
+        try:
+            issues = recent_issues()
+            commits_today, commits_this_week = recent_commits()
+        except Exception as ex:
+            print("Github crashed")
+        try:
+            client_count = freshbooks.client.list().clients.attrib['total']
+        except:
+            print("freshbooks crashed")
         socketio.emit('response', {'issues': issues,
                       'commits': commits_this_week,
                       'commits_today': commits_today,
-                      'critical_number': '1/5'}, namespace='')
+                      'critical_number': client_count}, namespace='')
         time.sleep(60*30)  # 30 minutes
 
 
